@@ -1,0 +1,76 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to MineZ miner",
+        "description": "Enter the miner gRPC connection details.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the miner",
+      "invalid_auth": "Authentication failed",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This miner is already configured"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": { "name": "Status" },
+      "hashboard_count": { "name": "Hashboard count" },
+      "api_version": { "name": "API version" },
+      "last_fetch_interval": { "name": "Last fetch interval" },
+      "bos_version": { "name": "BOS version" },
+      "hashrate_5m": { "name": "Hashrate 5m" },
+      "hashrate_15m": { "name": "Hashrate 15m" },
+      "nominal_hashrate": { "name": "Nominal hashrate" },
+      "power": { "name": "Power" },
+      "efficiency": { "name": "Efficiency" },
+      "highest_temp": { "name": "Highest temperature" },
+      "fan_rpm_avg": { "name": "Average fan RPM" },
+      "accepted_shares": { "name": "Accepted shares" },
+      "rejected_shares": { "name": "Rejected shares" },
+      "stale_shares": { "name": "Stale shares" },
+      "best_share": { "name": "Best share" },
+      "found_blocks": { "name": "Found blocks" },
+      "system_uptime": { "name": "System uptime" },
+      "system_uptime_readable": { "name": "System uptime readable" },
+      "bosminer_uptime": { "name": "Bosminer uptime" },
+      "bosminer_uptime_readable": { "name": "Bosminer uptime readable" },
+      "error_count": { "name": "Error count" },
+      "tuner_state": { "name": "Tuner state" },
+      "power_target": { "name": "Power target" }
+      ,
+      "hashboard_enabled": { "name": "Hashboard enabled" },
+      "hashboard_hashrate_5m": { "name": "Hashboard hashrate 5m" },
+      "hashboard_hashrate_15m": { "name": "Hashboard hashrate 15m" },
+      "hashboard_nominal_hashrate": { "name": "Hashboard nominal hashrate" },
+      "hashboard_highest_chip_temp": { "name": "Hashboard highest chip temperature" },
+      "hashboard_board_temp": { "name": "Hashboard board temperature" },
+      "hashboard_inlet_temp": { "name": "Hashboard inlet temperature" },
+      "hashboard_outlet_temp": { "name": "Hashboard outlet temperature" },
+      "hashboard_voltage": { "name": "Hashboard voltage" },
+      "hashboard_frequency": { "name": "Hashboard frequency" },
+      "hashboard_chips_count": { "name": "Hashboard chips count" }
+    },
+    "switch": {
+      "locate_device": { "name": "Locate device" }
+    },
+    "button": {
+      "pause_mining": { "name": "Pause mining" },
+      "resume_mining": { "name": "Resume mining" },
+      "restart_bosminer": { "name": "Restart bosminer" },
+      "reboot_miner": { "name": "Reboot miner" }
+    },
+    "number": {
+      "power_target_number": { "name": "Power target" }
+    }
+  }
+}

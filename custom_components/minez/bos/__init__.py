@@ -1,0 +1,1 @@
+"""Vendored Braiins protobuf package."""

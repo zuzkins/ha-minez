@@ -1,0 +1,215 @@
+title: Antminer
+path: antminer
+icon: mdi:pickaxe
+type: sections
+max_columns: 4
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: Miner Overview
+      - type: tile
+        entity: sensor.antminer_status
+        name: Status
+      - type: tile
+        entity: sensor.antminer_hashrate_5m
+        name: Hashrate 5m
+      - type: tile
+        entity: sensor.antminer_power
+        name: Power
+      - type: tile
+        entity: sensor.antminer_efficiency
+        name: Efficiency
+      - type: tile
+        entity: sensor.antminer_highest_temperature
+        name: Highest Temp
+      - type: tile
+        entity: sensor.antminer_average_fan_rpm
+        name: Fan RPM
+      - type: tile
+        entity: sensor.antminer_error_count
+        name: Errors
+        color: red
+      - type: tile
+        entity: sensor.antminer_last_fetch_interval
+        name: Fetch Interval
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Runtime
+      - type: entities
+        entities:
+          - entity: sensor.antminer_api_version
+            name: API Version
+          - entity: sensor.antminer_bos_version
+            name: BOS Version
+          - entity: sensor.antminer_tuner_state
+            name: Tuner State
+          - entity: sensor.antminer_power_target
+            name: Power Target
+          - entity: sensor.antminer_system_uptime_readable
+            name: System Uptime
+          - entity: sensor.antminer_bosminer_uptime_readable
+            name: Bosminer Uptime
+          - entity: sensor.antminer_system_uptime
+            name: System Uptime (s)
+          - entity: sensor.antminer_bosminer_uptime
+            name: Bosminer Uptime (s)
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Controls
+      - type: entities
+        entities:
+          - entity: switch.antminer_locate_device
+            name: Locate Device
+          - entity: number.antminer_power_target
+            name: Power Target
+      - type: horizontal-stack
+        cards:
+          - type: button
+            entity: button.antminer_pause_mining
+            name: Pause
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.antminer_pause_mining
+          - type: button
+            entity: button.antminer_resume_mining
+            name: Resume
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.antminer_resume_mining
+      - type: horizontal-stack
+        cards:
+          - type: button
+            entity: button.antminer_restart_bosminer
+            name: Restart
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.antminer_restart_bosminer
+          - type: button
+            entity: button.antminer_reboot_miner
+            name: Reboot
+            tap_action:
+              action: perform-action
+              confirmation:
+                text: Reboot the miner?
+              perform_action: button.press
+              target:
+                entity_id: button.antminer_reboot_miner
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Shares and Pool
+      - type: entities
+        entities:
+          - entity: sensor.antminer_accepted_shares
+            name: Accepted Shares
+          - entity: sensor.antminer_rejected_shares
+            name: Rejected Shares
+          - entity: sensor.antminer_stale_shares
+            name: Stale Shares
+          - entity: sensor.antminer_best_share
+            name: Best Share
+          - entity: sensor.antminer_found_blocks
+            name: Found Blocks
+      - type: history-graph
+        entities:
+          - entity: sensor.antminer_hashrate_5m
+            name: Hashrate 5m
+          - entity: sensor.antminer_power
+            name: Power
+        hours_to_show: 12
+
+  - type: grid
+    cards:
+      - type: heading
+        heading: Hashboards
+      - type: entities
+        entities:
+          - entity: sensor.antminer_hashboard_count
+            name: Hashboard Count
+      - type: entities
+        title: Hashboard 1
+        entities:
+          - entity: sensor.antminer_hashboard_1_enabled
+            name: Enabled
+          - entity: sensor.antminer_hashboard_1_hashrate_5m
+            name: Hashrate 5m
+          - entity: sensor.antminer_hashboard_1_hashrate_15m
+            name: Hashrate 15m
+          - entity: sensor.antminer_hashboard_1_nominal_hashrate
+            name: Nominal Hashrate
+          - entity: sensor.antminer_hashboard_1_highest_chip_temperature
+            name: Highest Chip Temp
+          - entity: sensor.antminer_hashboard_1_board_temperature
+            name: Board Temp
+          - entity: sensor.antminer_hashboard_1_inlet_temperature
+            name: Inlet Temp
+          - entity: sensor.antminer_hashboard_1_outlet_temperature
+            name: Outlet Temp
+          - entity: sensor.antminer_hashboard_1_voltage
+            name: Voltage
+          - entity: sensor.antminer_hashboard_1_frequency_2
+            name: Frequency
+          - entity: sensor.antminer_hashboard_1_chips_count
+            name: Chips
+      - type: entities
+        title: Hashboard 2
+        entities:
+          - entity: sensor.antminer_hashboard_2_enabled
+            name: Enabled
+          - entity: sensor.antminer_hashboard_2_hashrate_5m
+            name: Hashrate 5m
+          - entity: sensor.antminer_hashboard_2_hashrate_15m
+            name: Hashrate 15m
+          - entity: sensor.antminer_hashboard_2_nominal_hashrate
+            name: Nominal Hashrate
+          - entity: sensor.antminer_hashboard_2_highest_chip_temperature
+            name: Highest Chip Temp
+          - entity: sensor.antminer_hashboard_2_board_temperature
+            name: Board Temp
+          - entity: sensor.antminer_hashboard_2_inlet_temperature
+            name: Inlet Temp
+          - entity: sensor.antminer_hashboard_2_outlet_temperature
+            name: Outlet Temp
+          - entity: sensor.antminer_hashboard_2_voltage
+            name: Voltage
+          - entity: sensor.antminer_hashboard_2_frequency_2
+            name: Frequency
+          - entity: sensor.antminer_hashboard_2_chips_count
+            name: Chips
+      - type: entities
+        title: Hashboard 3
+        entities:
+          - entity: sensor.antminer_hashboard_3_enabled
+            name: Enabled
+          - entity: sensor.antminer_hashboard_3_hashrate_5m
+            name: Hashrate 5m
+          - entity: sensor.antminer_hashboard_3_hashrate_15m
+            name: Hashrate 15m
+          - entity: sensor.antminer_hashboard_3_nominal_hashrate
+            name: Nominal Hashrate
+          - entity: sensor.antminer_hashboard_3_highest_chip_temperature
+            name: Highest Chip Temp
+          - entity: sensor.antminer_hashboard_3_board_temperature
+            name: Board Temp
+          - entity: sensor.antminer_hashboard_3_inlet_temperature
+            name: Inlet Temp
+          - entity: sensor.antminer_hashboard_3_outlet_temperature
+            name: Outlet Temp
+          - entity: sensor.antminer_hashboard_3_voltage
+            name: Voltage
+          - entity: sensor.antminer_hashboard_3_frequency_2
+            name: Frequency
+          - entity: sensor.antminer_hashboard_3_chips_count
+            name: Chips

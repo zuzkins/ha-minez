@@ -1,0 +1,14 @@
+{
+  "name": "MineZ",
+  "content_in_root": false,
+  "country": "CZ",
+  "domains": [
+    "sensor",
+    "switch",
+    "button",
+    "number"
+  ],
+  "homeassistant": "2025.1.0",
+  "iot_class": "Local Polling",
+  "render_readme": true
+}
