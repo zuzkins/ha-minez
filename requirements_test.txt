@@ -1,0 +1,3 @@
+pytest-homeassistant-custom-component==0.13.205
+grpcio>=1.75.1,<2
+protobuf==6.32.0
