@@ -10,6 +10,14 @@
           "username": "Username",
           "password": "Password"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate with MineZ miner",
+        "description": "Enter updated credentials for the miner at {host}.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -18,7 +26,8 @@
       "unknown": "Unexpected error"
     },
     "abort": {
-      "already_configured": "This miner is already configured"
+      "already_configured": "This miner is already configured",
+      "reauth_successful": "Authentication was updated successfully"
     }
   },
   "entity": {

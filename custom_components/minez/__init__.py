@@ -5,9 +5,9 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .api import MinezApiAuthError, MinezApiClient, MinezApiError
+from .api import MinezApiClient
 from .const import DOMAIN
 from .coordinator import MinezDataUpdateCoordinator
 
@@ -26,10 +26,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         await coordinator.async_config_entry_first_refresh()
-    except MinezApiAuthError as err:
-        raise ConfigEntryNotReady("Authentication to the miner failed") from err
-    except MinezApiError as err:
-        raise ConfigEntryNotReady(f"Unable to connect to MineZ miner: {err}") from err
+    except (ConfigEntryAuthFailed, ConfigEntryNotReady):
+        await client.async_close()
+        raise
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "client": client,

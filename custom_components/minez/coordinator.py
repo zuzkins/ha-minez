@@ -6,7 +6,11 @@ import logging
 import time
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.update_coordinator import (
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
 
 from .api import MinezApiAuthError, MinezApiClient, MinezApiError
 from .const import DOMAIN, UPDATE_INTERVAL
@@ -28,8 +32,10 @@ class MinezDataUpdateCoordinator(DataUpdateCoordinator[dict]):
     async def _async_update_data(self) -> dict:
         try:
             data = await self.client.async_fetch_data()
-        except MinezApiAuthError:
-            raise
+        except MinezApiAuthError as err:
+            raise ConfigEntryAuthFailed(
+                "Authentication to the miner failed"
+            ) from err
         except MinezApiError as err:
             raise UpdateFailed(str(err)) from err
 
