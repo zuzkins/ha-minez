@@ -114,7 +114,7 @@ SENSORS: tuple[MinezSensorDescription, ...] = (
     ),
     MinezSensorDescription(
         key="power_w",
-        translation_key="power",
+        translation_key="approximate_power_consumption",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -219,7 +219,7 @@ SENSORS: tuple[MinezSensorDescription, ...] = (
     ),
     MinezSensorDescription(
         key="power_target_w",
-        translation_key="power_target",
+        translation_key="current_power_target",
         native_unit_of_measurement=UnitOfPower.WATT,
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,

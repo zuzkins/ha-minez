@@ -106,11 +106,11 @@ class PowerTargetApiStub:
         self.closed = True
 
 
-async def test_set_power_target_number_displays_active_target(
+async def test_set_power_target_keeps_configured_and_active_values_distinct(
     hass: HomeAssistant,
     monkeypatch: MonkeyPatch,
 ) -> None:
-    """The number displays the active DPS target after updating configuration."""
+    """The number controls configuration while the sensor shows active DPS."""
     api = PowerTargetApiStub()
 
     class ApiClientFactoryStub:
@@ -143,8 +143,15 @@ async def test_set_power_target_number_displays_active_target(
     sensor_entity_id = registry.async_get_entity_id(
         SENSOR_DOMAIN, DOMAIN, "miner-uid_power_target_w"
     )
-    assert number_entity_id is not None
-    assert sensor_entity_id is not None
+    approximate_power_entity_id = registry.async_get_entity_id(
+        SENSOR_DOMAIN, DOMAIN, "miner-uid_power_w"
+    )
+    assert number_entity_id == "number.miner_power_target"
+    assert sensor_entity_id == "sensor.miner_current_power_target"
+    assert (
+        approximate_power_entity_id
+        == "sensor.miner_approximate_power_consumption"
+    )
 
     try:
         await hass.services.async_call(
@@ -161,7 +168,7 @@ async def test_set_power_target_number_displays_active_target(
         assert api.set_power_targets == [NEW_POWER_TARGET]
         assert api.configured_power_target == NEW_POWER_TARGET
         assert hass.states.get(sensor_entity_id).state == str(ACTIVE_POWER_TARGET)
-        assert hass.states.get(number_entity_id).state == str(ACTIVE_POWER_TARGET)
+        assert hass.states.get(number_entity_id).state == str(NEW_POWER_TARGET)
     finally:
         assert await hass.config_entries.async_unload(entry.entry_id)
 

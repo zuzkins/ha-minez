@@ -183,19 +183,30 @@ class MinezApiClient:
         if self._info.username:
             await self._ensure_token()
 
-        api_version, details, stats, cooling, tuner, locate, errors, constraints, status, hashboards = (
-            await asyncio.gather(
-                self._get_api_version(),
-                self._get_miner_details(),
-                self._get_miner_stats(),
-                self._get_cooling_state(),
-                self._get_tuner_state(),
-                self._get_locate_device_status(),
-                self._get_errors(),
-                self._get_constraints(),
-                self._get_miner_status(),
-                self._get_hashboards(),
-            )
+        (
+            api_version,
+            details,
+            stats,
+            cooling,
+            tuner,
+            locate,
+            errors,
+            configuration,
+            constraints,
+            status,
+            hashboards,
+        ) = await asyncio.gather(
+            self._get_api_version(),
+            self._get_miner_details(),
+            self._get_miner_stats(),
+            self._get_cooling_state(),
+            self._get_tuner_state(),
+            self._get_locate_device_status(),
+            self._get_errors(),
+            self._get_miner_configuration(),
+            self._get_constraints(),
+            self._get_miner_status(),
+            self._get_hashboards(),
         )
 
         return self._normalize_snapshot(
@@ -206,6 +217,7 @@ class MinezApiClient:
             tuner=tuner,
             locate=locate,
             errors=errors,
+            configuration=configuration,
             constraints=constraints,
             status=status,
             hashboards=hashboards,
@@ -433,6 +445,13 @@ class MinezApiClient:
             actions_pb2.GetLocateDeviceStatusRequest(),
         )
 
+    async def _get_miner_configuration(self) -> Any:
+        return await self._call_with_auth(
+            configuration_pb2_grpc.ConfigurationServiceStub,
+            "GetMinerConfiguration",
+            configuration_pb2.GetMinerConfigurationRequest(),
+        )
+
     async def _get_constraints(self) -> Any:
         return await self._call_with_auth(
             configuration_pb2_grpc.ConfigurationServiceStub,
@@ -450,6 +469,7 @@ class MinezApiClient:
         tuner: Any,
         locate: Any,
         errors: Any,
+        configuration: Any,
         constraints: Any,
         status: str | None,
         hashboards: Any,
@@ -470,6 +490,12 @@ class MinezApiClient:
             power_target = _watt(tuner.power_target_mode_state.current_target)
         if mode_state_name == "hashrate_target_mode_state":
             hashrate_target = _ths(tuner.hashrate_target_mode_state.current_target)
+
+        configured_power_target = None
+        if configuration.HasField("tuner") and configuration.tuner.HasField(
+            "power_target"
+        ):
+            configured_power_target = _watt(configuration.tuner.power_target)
 
         min_power_target = None
         max_power_target = None
@@ -589,6 +615,7 @@ class MinezApiClient:
                 "tuner_state": tuner_state,
                 "mode_state": mode_state_name,
                 "power_target_w": power_target,
+                "configured_power_target_w": configured_power_target,
                 "hashrate_target_ths": hashrate_target,
                 "power_target_min_w": min_power_target,
                 "power_target_max_w": max_power_target,
@@ -610,6 +637,7 @@ class MinezApiClient:
                 "stats": _message_to_dict(stats),
                 "cooling": _message_to_dict(cooling),
                 "tuner": _message_to_dict(tuner),
+                "configuration": _message_to_dict(configuration),
                 "constraints": _message_to_dict(constraints),
                 "hashboards": _message_to_dict(hashboards),
             },

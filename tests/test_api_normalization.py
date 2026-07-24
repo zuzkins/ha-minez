@@ -30,6 +30,7 @@ def normalize_snapshot(**overrides: Any) -> dict[str, Any]:
         "tuner": performance_pb2.GetTunerStateResponse(),
         "locate": actions_pb2.LocateDeviceStatusResponse(),
         "errors": miner_pb2.GetErrorsResponse(),
+        "configuration": configuration_pb2.GetMinerConfigurationResponse(),
         "constraints": configuration_pb2.GetConstraintsResponse(),
         "status": None,
         "hashboards": miner_pb2.GetHashboardsResponse(),
@@ -118,6 +119,11 @@ def test_normalize_miner_telemetry() -> None:
             )
         )
     )
+    configuration = configuration_pb2.GetMinerConfigurationResponse(
+        tuner=performance_pb2.TunerConfiguration(
+            power_target=units_pb2.Power(watt=3_500)
+        )
+    )
 
     result = normalize_snapshot(
         api_version="2.3.1-rc1+abc",
@@ -132,6 +138,7 @@ def test_normalize_miner_telemetry() -> None:
                 miner_pb2.MinerError(message="Board warning"),
             ]
         ),
+        configuration=configuration,
         constraints=constraints,
         status=miner_pb2.MinerStatus.Name(miner_pb2.MINER_STATUS_NORMAL),
     )
@@ -183,6 +190,7 @@ def test_normalize_miner_telemetry() -> None:
         "tuner_state": "Stable",
         "mode_state": "power_target_mode_state",
         "power_target_w": 3_200,
+        "configured_power_target_w": 3_500,
         "hashrate_target_ths": None,
         "power_target_min_w": 2_000,
         "power_target_max_w": 4_000,
@@ -246,6 +254,7 @@ def test_normalize_hashboard_telemetry() -> None:
         "tuner_state": "Tuning",
         "mode_state": "hashrate_target_mode_state",
         "power_target_w": None,
+        "configured_power_target_w": None,
         "hashrate_target_ths": 105.5,
         "power_target_min_w": None,
         "power_target_max_w": None,

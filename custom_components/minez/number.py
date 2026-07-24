@@ -42,8 +42,8 @@ class MinezPowerTargetNumber(MinezEntity, NumberEntity):
 
     @property
     def native_value(self) -> float | None:
-        """Return the current power target."""
-        return self.coordinator.data["performance"]["power_target_w"]
+        """Return the configured power target."""
+        return self.coordinator.data["performance"]["configured_power_target_w"]
 
     @property
     def native_min_value(self) -> float:
