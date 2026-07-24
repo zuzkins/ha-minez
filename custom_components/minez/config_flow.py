@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 import logging
-from typing import Any
+from typing import Any, Protocol
 
 import voluptuous as vol
 from homeassistant import config_entries
@@ -39,26 +39,41 @@ STEP_REAUTH_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def _async_validate_input(user_input: Mapping[str, Any]) -> dict[str, Any]:
-    """Validate connection details and return miner identity information."""
-    client = MinezApiClient(
-        MinezConnectionInfo(
-            host=user_input[CONF_HOST],
-            port=user_input[CONF_PORT],
-            username=user_input[CONF_USERNAME],
-            password=user_input[CONF_PASSWORD],
-        )
-    )
-    try:
-        return await client.async_validate()
-    finally:
-        await client.async_close()
+class MinezValidationClient(Protocol):
+    """Client operations required while validating config flow input."""
+
+    async def async_validate(self) -> dict[str, Any]: ...
+
+    async def async_close(self) -> None: ...
 
 
 class MinezConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for MineZ."""
 
     VERSION = 1
+
+    def _create_validation_client(
+        self, info: MinezConnectionInfo
+    ) -> MinezValidationClient:
+        """Create a client for validating flow input."""
+        return MinezApiClient(info)
+
+    async def _async_validate_input(
+        self, user_input: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """Validate connection details and return miner identity information."""
+        client = self._create_validation_client(
+            MinezConnectionInfo(
+                host=user_input[CONF_HOST],
+                port=user_input[CONF_PORT],
+                username=user_input[CONF_USERNAME],
+                password=user_input[CONF_PASSWORD],
+            )
+        )
+        try:
+            return await client.async_validate()
+        finally:
+            await client.async_close()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -68,7 +83,7 @@ class MinezConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                info = await _async_validate_input(user_input)
+                info = await self._async_validate_input(user_input)
             except MinezApiAuthError:
                 errors["base"] = "invalid_auth"
             except MinezApiConnectionError:
@@ -107,7 +122,7 @@ class MinezConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_PASSWORD: user_input[CONF_PASSWORD],
             }
             try:
-                await _async_validate_input(updated_data)
+                await self._async_validate_input(updated_data)
             except MinezApiAuthError:
                 errors["base"] = "invalid_auth"
             except MinezApiConnectionError:

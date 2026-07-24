@@ -2,100 +2,64 @@
 
 from __future__ import annotations
 
+from homeassistant.components import switch
 from homeassistant.components.switch import (
     DOMAIN as SWITCH_DOMAIN,
     SERVICE_TURN_OFF,
     SERVICE_TURN_ON,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_ENTITY_ID,
-    CONF_HOST,
-    CONF_PASSWORD,
-    CONF_USERNAME,
     STATE_OFF,
     STATE_ON,
     STATE_UNAVAILABLE,
 )
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
-from pytest import MonkeyPatch
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.setup import async_setup_component
 
-import custom_components.minez as minez
-from custom_components.minez.const import DOMAIN
-from tests.stubs import MinerApiStub
+from custom_components.minez.switch import MinezMiningSwitch
+from tests.base import MinezEntityTestBase
 
 
-async def test_mining_switch_pauses_and_resumes_mining(
-    hass: HomeAssistant,
-    monkeypatch: MonkeyPatch,
-) -> None:
-    """The mining switch follows miner state and invokes both actions."""
-    api = MinerApiStub()
+class TestMinezMiningSwitch(MinezEntityTestBase):
+    """Test the pause and resume mining switch."""
 
-    class ApiClientFactoryStub:
-        """Return the mining API stub for config-entry setup."""
+    async def test_pause_resume_and_unsupported_status(self) -> None:
+        """The switch invokes both actions and follows miner state."""
+        entity = MinezMiningSwitch(self.coordinator)
+        assert entity.unique_id == "miner-uid_mining"
+        assert await async_setup_component(self.hass, switch.DOMAIN, {})
+        component = self.hass.data[switch.DATA_COMPONENT]
+        await component.async_add_entities([entity])
+        self._entities.append(entity)
+        assert entity.entity_id is not None
+        assert self.hass.states.get(entity.entity_id).state == STATE_ON
 
-        @classmethod
-        def from_config_entry(cls, _entry: ConfigEntry) -> MinerApiStub:
-            return api
-
-    monkeypatch.setattr(minez, "MinezApiClient", ApiClientFactoryStub)
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        title="Miner",
-        unique_id="miner-uid",
-        data={
-            CONF_HOST: "miner.local",
-            CONF_USERNAME: "user",
-            CONF_PASSWORD: "password",
-        },
-    )
-    entry.add_to_hass(hass)
-
-    assert await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
-
-    registry = er.async_get(hass)
-    entity_id = registry.async_get_entity_id(
-        SWITCH_DOMAIN, DOMAIN, "miner-uid_mining"
-    )
-    assert entity_id == "switch.miner_mining"
-    assert hass.states.get(entity_id).state == STATE_ON
-    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
-
-    try:
-        await hass.services.async_call(
+        await self.hass.services.async_call(
             SWITCH_DOMAIN,
             SERVICE_TURN_OFF,
-            {ATTR_ENTITY_ID: entity_id},
+            {ATTR_ENTITY_ID: entity.entity_id},
             blocking=True,
         )
-        await coordinator.async_refresh()
-        await hass.async_block_till_done()
+        await self.coordinator.async_refresh()
+        await self.hass.async_block_till_done()
 
-        assert api.pause_requests == 1
-        assert hass.states.get(entity_id).state == STATE_OFF
+        assert self.api.pause_requests == 1
+        assert self.hass.states.get(entity.entity_id).state == STATE_OFF
 
-        await hass.services.async_call(
+        await self.hass.services.async_call(
             SWITCH_DOMAIN,
             SERVICE_TURN_ON,
-            {ATTR_ENTITY_ID: entity_id},
+            {ATTR_ENTITY_ID: entity.entity_id},
             blocking=True,
         )
-        await coordinator.async_refresh()
-        await hass.async_block_till_done()
+        await self.coordinator.async_refresh()
+        await self.hass.async_block_till_done()
 
-        assert api.resume_requests == 1
-        assert hass.states.get(entity_id).state == STATE_ON
+        assert self.api.resume_requests == 1
+        assert self.hass.states.get(entity.entity_id).state == STATE_ON
 
-        api.status = "Restricted"
-        await coordinator.async_refresh()
-        await hass.async_block_till_done()
+        self.api.status = "Restricted"
+        await self.coordinator.async_refresh()
+        await self.hass.async_block_till_done()
 
-        assert hass.states.get(entity_id).state == STATE_UNAVAILABLE
-    finally:
-        assert await hass.config_entries.async_unload(entry.entry_id)
-
-    assert api.closed
+        assert self.hass.states.get(entity.entity_id).state == STATE_UNAVAILABLE
