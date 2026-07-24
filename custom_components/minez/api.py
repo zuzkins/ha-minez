@@ -623,6 +623,8 @@ class MinezApiClient:
             "controls": {
                 "locate_device_enabled": locate.enabled,
                 "supports_power_target": min_power_target is not None and max_power_target is not None,
+                "mining_active": miner_status == "Normal",
+                "supports_mining_toggle": miner_status in {"Normal", "Paused"},
             },
             "errors": {
                 "count": len(errors.errors),

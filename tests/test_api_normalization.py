@@ -198,6 +198,8 @@ def test_normalize_miner_telemetry() -> None:
     assert result["controls"] == {
         "locate_device_enabled": True,
         "supports_power_target": True,
+        "mining_active": True,
+        "supports_mining_toggle": True,
     }
     assert result["errors"] == {
         "count": 2,
@@ -315,3 +317,13 @@ def test_normalize_unknown_enum_values() -> None:
     assert result["miner"]["bos_mode"] is None
     assert result["miner"]["control_board_soc_family"] is None
     assert result["performance"]["tuner_state"] is None
+    assert not result["controls"]["mining_active"]
+    assert not result["controls"]["supports_mining_toggle"]
+
+
+def test_normalize_paused_miner_supports_mining_toggle() -> None:
+    """A paused miner can be represented as an off mining switch."""
+    result = normalize_snapshot(status="MINER_STATUS_PAUSED")
+
+    assert not result["controls"]["mining_active"]
+    assert result["controls"]["supports_mining_toggle"]

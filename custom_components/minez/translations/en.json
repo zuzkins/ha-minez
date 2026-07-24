@@ -69,7 +69,8 @@
       "hashboard_chips_count": { "name": "Hashboard chips count" }
     },
     "switch": {
-      "locate_device": { "name": "Locate device" }
+      "locate_device": { "name": "Locate device" },
+      "mining": { "name": "Mining" }
     },
     "button": {
       "pause_mining": { "name": "Pause mining" },
