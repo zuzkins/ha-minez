@@ -144,6 +144,7 @@ class MinezApiClient:
         self._info = info
         self._channel: grpc.aio.Channel | None = None
         self._token: str | None = None
+        self._token_lock = asyncio.Lock()
 
     @classmethod
     def from_config_entry(cls, entry: ConfigEntry) -> "MinezApiClient":
@@ -270,26 +271,30 @@ class MinezApiClient:
         if self._token:
             return self._token
 
-        channel = await self._ensure_channel()
-        stub = authentication_pb2_grpc.AuthenticationServiceStub(channel)
+        async with self._token_lock:
+            if self._token:
+                return self._token
 
-        try:
-            response = await asyncio.wait_for(
-                stub.Login(
-                    authentication_pb2.LoginRequest(
-                        username=self._info.username,
-                        password=self._info.password,
-                    )
-                ),
-                timeout=self._info.timeout,
-            )
-        except grpc.aio.AioRpcError as err:
-            raise self._translate_error(err) from err
-        except asyncio.TimeoutError as err:
-            raise MinezApiConnectionError("Login timed out") from err
+            channel = await self._ensure_channel()
+            stub = authentication_pb2_grpc.AuthenticationServiceStub(channel)
 
-        self._token = response.token
-        return self._token
+            try:
+                response = await asyncio.wait_for(
+                    stub.Login(
+                        authentication_pb2.LoginRequest(
+                            username=self._info.username,
+                            password=self._info.password,
+                        )
+                    ),
+                    timeout=self._info.timeout,
+                )
+            except grpc.aio.AioRpcError as err:
+                raise self._translate_error(err) from err
+            except asyncio.TimeoutError as err:
+                raise MinezApiConnectionError("Login timed out") from err
+
+            self._token = response.token
+            return self._token
 
     async def _call(
         self,
@@ -313,14 +318,19 @@ class MinezApiClient:
         except asyncio.TimeoutError as err:
             raise MinezApiConnectionError(f"{method_name} timed out") from err
 
-    async def _call_with_auth(self, stub_factory: Any, method_name: str, request: Any) -> Any:
+    async def _call_with_auth(
+        self, stub_factory: Any, method_name: str, request: Any
+    ) -> Any:
         token = await self._ensure_token()
         metadata = (("authorization", token),)
 
         try:
-            return await self._call(stub_factory, method_name, request, metadata=metadata)
+            return await self._call(
+                stub_factory, method_name, request, metadata=metadata
+            )
         except MinezApiAuthError:
-            self._token = None
+            if self._token == token:
+                self._token = None
             token = await self._ensure_token()
             return await self._call(
                 stub_factory,
@@ -344,22 +354,35 @@ class MinezApiClient:
         return version
 
     async def _get_miner_status(self) -> str | None:
-        channel = await self._ensure_channel()
-        stub = miner_pb2_grpc.MinerServiceStub(channel)
+        token = await self._ensure_token()
 
         try:
-            call = stub.GetMinerStatus(
-                miner_pb2.GetMinerStatusRequest(),
-                metadata=(("authorization", await self._ensure_token()),),
-            )
-            response = await asyncio.wait_for(call.read(), timeout=self._info.timeout)
-            call.cancel()
+            response = await self._read_miner_status(token)
+        except MinezApiAuthError:
+            if self._token == token:
+                self._token = None
+            token = await self._ensure_token()
+            response = await self._read_miner_status(token)
+
+        return _enum_name(response, "status") if response else None
+
+    async def _read_miner_status(self, token: str) -> Any:
+        """Read one status update using the provided session token."""
+        channel = await self._ensure_channel()
+        stub = miner_pb2_grpc.MinerServiceStub(channel)
+        call = stub.GetMinerStatus(
+            miner_pb2.GetMinerStatusRequest(),
+            metadata=(("authorization", token),),
+        )
+
+        try:
+            return await asyncio.wait_for(call.read(), timeout=self._info.timeout)
         except grpc.aio.AioRpcError as err:
             raise self._translate_error(err) from err
         except asyncio.TimeoutError as err:
             raise MinezApiConnectionError("GetMinerStatus timed out") from err
-
-        return _enum_name(response, "status") if response else None
+        finally:
+            call.cancel()
 
     async def _get_miner_details(self) -> Any:
         return await self._call_with_auth(
