@@ -3,10 +3,10 @@
   "name": "MineZ",
   "codeowners": [],
   "config_flow": true,
-  "documentation": "https://github.com/zuzkins/braiinz",
+  "documentation": "https://github.com/zuzkins/ha-minez",
   "integration_type": "device",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/zuzkins/braiinz/issues",
+  "issue_tracker": "https://github.com/zuzkins/ha-minez/issues",
   "loggers": [
     "custom_components.minez"
   ],
@@ -14,5 +14,5 @@
     "grpcio>=1.75.1,<2",
     "protobuf==6.32.0"
   ],
-  "version": "0.1.0"
+  "version": "0.2.0"
 }
