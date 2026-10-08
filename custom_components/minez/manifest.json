@@ -12,7 +12,7 @@
   ],
   "requirements": [
     "grpcio>=1.75.1,<2",
-    "protobuf==6.32.0"
+    "protobuf>=6.31.1,<8"
   ],
   "version": "0.2.0"
 }
